@@ -86,49 +86,37 @@ bytes = read(count)                       % - reads
 writeline(str)
   
 str = readline()
+
+flush()
 ```
 
 ### Examples
 
    ```matlab
-   % find all available instruments with the `find()` method
+   % read an oscilloscope's identification string
    resource_ids = matvisa.find();
-
-   % connect to an instrument by passing a resource id to `matvisa()`
    scope = matvisa("USB0::0x2A8D::0x039B::CN61381404::INSTR");
-   
-   % send commands and read responses with the `write()` and `read()` methods
    scope.write("*IDN?");    % sends '*IDN', and nothing else
    response = scope.read(); % only stops reading when 488.2 end-of-message is received
-    % NOTE: `write()` coerces its input to a `char` array, and `read()` will return a `char` array
    
-   % for non 488.2 devices (eg. serial) use the `terminator` / `baud` properties and `writeline()` / `readline()` methods 
+   % for non 488.2 devices (eg. serial) use the terminator / baud properties and writeline() / readline() methods 
    serial = matvisa("ASRL6::INSTR");
    serial.baud = 115200;
    serial.terminator = sprintf("\r\n"); % configure terminator as CR/LF, default is LF
    serial.writeline("*IDN?");           % actually sends '*IDN?\r\n'
    response = serial.readline();        % reads until '\r\n' or timeout (terminator removed from response)
-   ```
-   _NOTE: `writeline()` coerces its input to a `string` and `readline()` will return a `string`_
 
-MATVISA also provides a `query()` method, which is equivilent to calling `writeline()`, then `readline()`.
-   ```matlab
+   % use query to save a line of code
    scope = matvisa("USB0::0x2A8D::0x039B::CN61381404::INSTR");
-   scope.terminator = sprintf("\n"); % this is already the default, but I'm just being verbose
-   response = scope.query("*IDN?");
-   ```
-You can optionally pass an integer to the `read()` method to read a certain number of bytes
-   ```matlab
+   response = scope.query("*IDN?"); % equivilent to writeline() & readline()
+   
+   % read the first 4 bytes of the oscilloscopes identification string
    scope.write("*IDN?");
    scope.read(4); % for my Keysight scope, this returns 'KEYS'
-   ```
-If you leave data in the receive buffer after a partial read, use the `flush()` method to clear it.
-   ```matlab
-   scope.flush(); % probably a good idea before new write operations too...
-   ```
-Set a timeout for the `read()` and `readline()` methods with the `timeout_ms` property
-   ```matlab
-   scope.timeout_ms = 1000; % read() and readline() will timeout (and throw an error) after 1 second
+   scope.flush(); % clear the read buffer for the next call to read()
+
+   % set a read timeout
+   scope.timeout_ms = 1000; % read() and readline() will throw an error after 1 second
    ```
 
 _Use `matvisa.help()` to open the NI-VISA documentation_
