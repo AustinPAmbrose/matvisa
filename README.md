@@ -2,100 +2,103 @@
 <br />
 <div align="center">
   <a href="https://github.com/github_username/repo_name">
-    <img src="images/logo.png" alt="Logo" width="80" height="80">
+    <img src="resources/logo.svg" alt="Logo" width="800" height="80">
   </a>
 
-<h3 align="center">matvisa</h3>
-
   <p align="center">
-    project_description
+    Control your test and measurement equiptment with MATLAB
     <br />
-    <a href="https://github.com/github_username/repo_name"><strong>Explore the docs »</strong></a>
-    <br />
-    <br />
-    <a href="https://github.com/github_username/repo_name">View Demo</a>
-    ·
     <a href="https://github.com/github_username/repo_name/issues">Report Bug</a>
     ·
     <a href="https://github.com/github_username/repo_name/issues">Request Feature</a>
   </p>
 </div>
 
+```matlab
+>> matvisa.find()
+
+ans = 
+
+  1×3 string array
+
+    "USB0::0x2A8D::0x039B::CN61381404::INSTR"    "ASRL6::INSTR"    "ASRL7::INSTR"
+
+>> scope = matvisa("USB0::0x2A8D::0x039B::CN61381404::INSTR");
+>> scope.writeline("*IDN?");
+>> scope.readline()
+
+ans = 
+
+    "KEYSIGHT TECHNOLOGIES,EDUX1052G,CN61381404,02.11.2020062221"
+```
+
 
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-Here's a blank template to get started: To avoid retyping too much info. Do a search and replace with your text editor for the following: `github_username`, `repo_name`, `twitter_handle`, `linkedin_username`, `email_client`, `email`, `project_title`, `project_description`
+MATVISA is a MATLAB wrapper for the visa library distributed by [National Instruments](ni.com) (NI-VISA). NI-VISA allows you to control test and measurement equiptment with software.
 
+MATLAB added direct support for .NET assemblies in R2009a, which lets you access libraries like `NationalInstruments.Visa.dll` from MATLAB! MATVISA makes the library available to MATLAB and wraps it.
 
 
 <!-- GETTING STARTED -->
 ## Getting Started
-
-This is an example of how you may give instructions on setting up your project locally.
-To get a local copy up and running follow these simple example steps.
-
 ### Prerequisites
 
-This is an example of how to list things you need to use the software and how to install them.
-* npm
-  ```sh
-  npm install npm@latest -g
+MATVISA will only work on computers running Windows. Check if your machine is supported by running the following command:
+  ```matlab
+  NET.isNETSupported()
   ```
 
 ### Installation
 
-1. Get a free API Key at [https://example.com](https://example.com)
-2. Clone the repo
-   ```sh
-   git clone https://github.com/github_username/repo_name.git
-   ```
-3. Install NPM packages
-   ```sh
-   npm install
-   ```
-4. Enter your API in `config.js`
-   ```js
-   const API_KEY = 'ENTER YOUR API';
-   ```
+1. Download the latest version of NI-VISA from [ni.com](https://www.ni.com/en/support/downloads/drivers/download.ni-visa.html)
+2. Install MATVISA from the MATLAB Add-On Explorer **OR** run the following command in MATLAB to install the MATVISA toolbox:
+  ```matlab
+  eval(webread(https://raw.githubusercontent.com/AustinPAmbrose/matvisa/main/install.m));
+  ```
 
 ## Usage
+1. Find all available instruments with the static `find()` method
+   ```matlab
+    resource_ids = matvisa.find();
+   ```
+3. Connect to an instrument by passing a resource id to `matvisa()`
+   ```matlab
+   scope = matvisa("USB0::0x2A8D::0x039B::CN61381404::INSTR");
+   ```
+5. Send commands and read responses with the `writeline()` and `readline()` methods
+   ```matlab
+   scope.writeline("*IDN?");
+   response = scope.readline();
+   ```
+6. You can also use the `query()` method to write and read in one operation
+   ```matalab
+   response = scope.query("*IDN?");
+   ```
+6. Set a timeout for the read method with the `timeout_ms` property
+   ```matlab
+   scope.timeout_ms = 1000; % readline() will timeout after 1 second
+   ```
+8. Send and receive uint8 data with the `write()` and `read()` methods
+9. For serial ports, set the baud rate by chan
 
-Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
-
-_For more examples, please refer to the [Documentation](https://example.com)_
+_Use `matvisa.help()`
 
 ## Roadmap
 
-- [ ] Feature 1
-- [ ] Feature 2
-- [ ] Feature 3
-    - [ ] Nested Feature
+- [ ] Support for mac os
 
-See the [open issues](https://github.com/github_username/repo_name/issues) for a full list of proposed features (and known issues).
-
-## Contributing
-
-Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
-
-If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also simply open an issue with the tag "enhancement".
-Don't forget to give the project a star! Thanks again!
-
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+See the [open issues](https://github.com/AustinPAmbrose/matvisa/issues) for a full list of proposed features (and known issues).
 
 <!-- LICENSE -->
 ## License
 
 Distributed under the MIT License. See `LICENSE.txt` for more information.
 
-
 <!-- CONTACT -->
 ## Contact
 
-Your Name - [@twitter_handle](https://twitter.com/twitter_handle) - email@email_client.com
+Austin Ambrose - [@twitter_handle](https://twitter.com/twitter_handle) - austin.p.ambrose@gmail.com
 
-Project Link: [https://github.com/github_username/repo_name](https://github.com/github_username/repo_name)
+Project Link: [https://github.com/AustinPAmbrose/matvisa](https://github.com/AustinPAmbrose/matvisa)
