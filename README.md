@@ -1,4 +1,4 @@
-<!-- PROJECT LOGO -->
+[![View MATVISA on File Exchange](https://www.mathworks.com/matlabcentral/images/matlab-file-exchange.svg)](https://www.mathworks.com/matlabcentral/fileexchange/158106-matvisa)
 <br />
 <div align="center">
   <a href="https://github.com/github_username/repo_name">
@@ -59,23 +59,50 @@ MATVISA will only work on computers running Windows. Check if your machine is su
   ```
 
 ## Usage
-1. Find all available instruments with the `find()` method
+### Summary
+```matlab
+% CLASSES ----------------------------------------------------------------------------------------------------------------------
+obj = matvisa(resource_id);               % - connects to instruments by their resource id's
+  % resource_id (1,1) string                - a resource ID for a connected instrument, e.g "ASRL6::INSTR" for COM 6
+  % obj (1,1) matvisa                       - a new matvisa instance
+
+% PROPERTIES -------------------------------------------------------------------------------------------------------------------
+baud (1,1) int32                          % - baud rate for serial devices
+terminator (1,:) char {mustBeNonempty}    % - terminator character(s) for writeline() and readline(), default is sprintf('\n')
+timeout_ms (1,1) int32                    % - sets the timeout in miliseconds for read() and readline()
+
+% METHODS ----------------------------------------------------------------------------------------------------------------------
+visa_list = find(filter)                  % - a static method that finds all connected instruments
+  % filter    (1,1) string                  - optional regular expression to filter resource id's, e.g "USB?*", default is "?*"
+  % visa_list (1,:) string                  - a list of all available resources
+
+write(bytes)                              % - writes raw data to the instrument (characters/ uint8's)
+  % bytes (1,:) char                        - bytes to be written to the instrument, as is, without any modification
+
+bytes = read(count)                       % - reads 
+  % count (1,:) int32 {mustBeScalarOrEmpty} - optional number of bytes to be read from the instrument, default is all
+  % bytes (1,:) char                        - bytes read from the instrument, as is, without any modification
+
+writeline(str)
+  
+str = readline()
+```
+
+### Examples
+
    ```matlab
-    resource_ids = matvisa.find();
-   ```
-3. Connect to an instrument by passing a resource id to `matvisa()`
-   ```matlab
+   % find all available instruments with the `find()` method
+   resource_ids = matvisa.find();
+
+   % connect to an instrument by passing a resource id to `matvisa()`
    scope = matvisa("USB0::0x2A8D::0x039B::CN61381404::INSTR");
-   ```
-5. Send commands and read responses with the `write()` and `read()` methods
-   ```matlab
+   
+   % send commands and read responses with the `write()` and `read()` methods
    scope.write("*IDN?");    % sends '*IDN', and nothing else
    response = scope.read(); % only stops reading when 488.2 end-of-message is received
-   ```
-  _NOTE: `write()` coerces its input to a `char` array, and `read()` will return a `char` array_
+    % NOTE: `write()` coerces its input to a `char` array, and `read()` will return a `char` array
    
-6. For non 488.2 devices (eg. serial) use the `terminator` / `baud` properties and `writeline()` / `readline()` methods 
-   ```matlab
+   % for non 488.2 devices (eg. serial) use the `terminator` / `baud` properties and `writeline()` / `readline()` methods 
    serial = matvisa("ASRL6::INSTR");
    serial.baud = 115200;
    serial.terminator = sprintf("\r\n"); % configure terminator as CR/LF, default is LF
@@ -84,22 +111,22 @@ MATVISA will only work on computers running Windows. Check if your machine is su
    ```
    _NOTE: `writeline()` coerces its input to a `string` and `readline()` will return a `string`_
 
-7. MATVISA also provides a `query()` method, which is equivilent to calling `writeline()`, then `readline()`.
+MATVISA also provides a `query()` method, which is equivilent to calling `writeline()`, then `readline()`.
    ```matlab
    scope = matvisa("USB0::0x2A8D::0x039B::CN61381404::INSTR");
    scope.terminator = sprintf("\n"); % this is already the default, but I'm just being verbose
    response = scope.query("*IDN?");
    ```
-8. You can optionally pass an integer to the `read()` method to read a certain number of bytes
+You can optionally pass an integer to the `read()` method to read a certain number of bytes
    ```matlab
    scope.write("*IDN?");
    scope.read(4); % for my Keysight scope, this returns 'KEYS'
    ```
-9. If you leave data in the receive buffer after a partial read, use the `flush()` method to clear it.
+If you leave data in the receive buffer after a partial read, use the `flush()` method to clear it.
    ```matlab
    scope.flush(); % probably a good idea before new write operations too...
    ```
-10. Set a timeout for the `read()` and `readline()` methods with the `timeout_ms` property
+Set a timeout for the `read()` and `readline()` methods with the `timeout_ms` property
    ```matlab
    scope.timeout_ms = 1000; % read() and readline() will timeout (and throw an error) after 1 second
    ```
