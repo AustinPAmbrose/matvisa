@@ -36,7 +36,7 @@ ans =
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-MATVISA is a MATLAB wrapper for the visa library distributed by [National Instruments](ni.com) (NI-VISA). NI-VISA allows you to control test and measurement equiptment with software.
+MATVISA is a MATLAB wrapper for the visa library distributed by National Instruments (NI-VISA). NI-VISA allows you to control test and measurement equiptment with software.
 
 MATLAB added direct support for .NET assemblies in R2009a, which lets you access libraries like `NationalInstruments.Visa.dll` from MATLAB! MATVISA makes the library available to MATLAB and wraps it.
 
@@ -59,7 +59,7 @@ MATVISA will only work on computers running Windows. Check if your machine is su
   ```
 
 ## Usage
-1. Find all available instruments with the static `find()` method
+1. Find all available instruments with the `find()` method
    ```matlab
     resource_ids = matvisa.find();
    ```
@@ -67,26 +67,48 @@ MATVISA will only work on computers running Windows. Check if your machine is su
    ```matlab
    scope = matvisa("USB0::0x2A8D::0x039B::CN61381404::INSTR");
    ```
-5. Send commands and read responses with the `writeline()` and `readline()` methods
+5. Send commands and read responses with the `write()` and `read()` methods
    ```matlab
-   scope.writeline("*IDN?");
-   response = scope.readline();
+   scope.write("*IDN?");    % sends '*IDN', and nothing else
+   response = scope.read(); % only stops reading when 488.2 end-of-message is received
    ```
-6. You can also use the `query()` method to write and read in one operation
-   ```matalab
+  _NOTE: `write()` coerces its input to a `char` array, and `read()` will return a `char` array_
+   
+6. For non 488.2 devices (eg. serial) use the `terminator` / `baud` properties and `writeline()` / `readline()` methods 
+   ```matlab
+   serial = matvisa("ASRL6::INSTR");
+   serial.baud = 115200;
+   serial.terminator = sprintf("\r\n"); % configure terminator as CR/LF, default is LF
+   serial.writeline("*IDN?");           % actually sends '*IDN?\r\n'
+   response = serial.readline();        % reads until '\r\n' or timeout (terminator removed from response)
+   ```
+   _NOTE: `writeline()` coerces its input to a `string` and `readline()` will return a `string`_
+
+7. MATVISA also provides a `query()` method, which is equivilent to calling `writeline()`, then `readline()`.
+   ```matlab
+   scope = matvisa("USB0::0x2A8D::0x039B::CN61381404::INSTR");
+   scope.terminator = sprintf("\n"); % this is already the default, but I'm just being verbose
    response = scope.query("*IDN?");
    ```
-6. Set a timeout for the read method with the `timeout_ms` property
+8. You can optionally pass an integer to the `read()` method to read a certain number of bytes
    ```matlab
-   scope.timeout_ms = 1000; % readline() will timeout after 1 second
+   scope.write("*IDN?");
+   scope.read(4); % for my Keysight scope, this returns 'KEYS'
    ```
-8. Send and receive uint8 data with the `write()` and `read()` methods
-9. For serial ports, set the baud rate by chan
+9. If you leave data in the receive buffer after a partial read, use the `flush()` method to clear it.
+   ```matlab
+   scope.flush(); % probably a good idea before new write operations too...
+   ```
+10. Set a timeout for the `read()` and `readline()` methods with the `timeout_ms` property
+   ```matlab
+   scope.timeout_ms = 1000; % read() and readline() will timeout (and throw an error) after 1 second
+   ```
 
-_Use `matvisa.help()`
+_Use `matvisa.help()` to open the NI-VISA documentation_
 
 ## Roadmap
-
+- [ ] Add a 'getting_started.mlx' script
+- [ ] Add `readbinblock()` and `writebinblock()` methods
 - [ ] Support for mac os
 
 See the [open issues](https://github.com/AustinPAmbrose/matvisa/issues) for a full list of proposed features (and known issues).
