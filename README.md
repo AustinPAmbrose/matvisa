@@ -36,27 +36,27 @@ ans =
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-MATVISA is a MATLAB wrapper for the visa library distributed by National Instruments (NI-VISA). NI-VISA allows you to control test and measurement equiptment with software.
+MATVISA is a MATLAB wrapper for the visa library distributed by National Instruments (NI-VISA). The NI-VISA library allows you to control test and measurement equiptment like oscilloscopes, function generators, multimeters, etc.
 
-MATLAB added direct support for .NET assemblies in R2009a, which lets you access libraries like `NationalInstruments.Visa.dll` from MATLAB! MATVISA makes the library available to MATLAB and wraps it.
-
+MATVISA is a bare-bones version of MATLAB's _Instrument Control_ toolbox.
 
 <!-- GETTING STARTED -->
 ## Getting Started
-### Prerequisites
+### System Requirements
 
-MATVISA will only work on computers running Windows. Check if your machine is supported by running the following command:
+- **OPERATING SYSTEM:** MATVISA will only work on computers running Windows. Use this command to check for support:
   ```matlab
   NET.isNETSupported()
+  ```
+- **NET ENVIRONMENT:** MATVISA requires MATLAB to use the .NET Framework. Check your NET environment with:
+  ```matlab
+  dotnetenv()
   ```
 
 ### Installation
 
 1. Download the latest version of NI-VISA from [ni.com](https://www.ni.com/en/support/downloads/drivers/download.ni-visa.html)
-2. Install MATVISA from the MATLAB Add-On Explorer **OR** run the following command in MATLAB to install the MATVISA toolbox:
-  ```matlab
-  eval(webread(https://raw.githubusercontent.com/AustinPAmbrose/matvisa/main/install.m));
-  ```
+2. Install MATVISA from the MATLAB Add-On Explorer **OR** from the matlab file exchanges
 
 ## Usage
 ### Summary
@@ -67,27 +67,33 @@ obj = matvisa(resource_id);               % - connects to instruments by their r
   % obj (1,1) matvisa                       - a new matvisa instance
 
 % PROPERTIES -------------------------------------------------------------------------------------------------------------------
-baud (1,1) int32                          % - baud rate for serial devices
-terminator (1,:) char {mustBeNonempty}    % - terminator character(s) for writeline() and readline(), default is sprintf('\n')
-timeout_ms (1,1) int32                    % - sets the timeout in miliseconds for read() and readline()
+baud % (1,1) int32                          - baud rate for serial devices
+terminator % (1,:) char {mustBeNonempty}    - terminator character(s) for writeline() and readline(), default is sprintf('\n')
+timeout_ms % (1,1) int32                    - sets the timeout in miliseconds for read() and readline()
 
 % METHODS ----------------------------------------------------------------------------------------------------------------------
 visa_list = find(filter)                  % - a static method that finds all connected instruments
   % filter    (1,1) string                  - optional regular expression to filter resource id's, e.g "USB?*", default is "?*"
   % visa_list (1,:) string                  - a list of all available resources
 
-write(bytes)                              % - writes raw data to the instrument (characters/ uint8's)
-  % bytes (1,:) char                        - bytes to be written to the instrument, as is, without any modification
+write(bytes)                              % - writes raw data to the instrument, without a terminator
+  % bytes (1,:) char                        - bytes sent to the instrument
 
-bytes = read(count)                       % - reads 
+bytes = read(count)                       % - reads until end-of-message, or until count is satisfied
   % count (1,:) int32 {mustBeScalarOrEmpty} - optional number of bytes to be read from the instrument, default is all
-  % bytes (1,:) char                        - bytes read from the instrument, as is, without any modification
+  % bytes (1,:) char                        - bytes read from the instrument
 
-writeline(str)
+writeline(str)                            % - writes string to instrument, with terminator appended
+  % str (1,1) string                        - string sent to the instrument
   
-str = readline()
+str = readline()                          % - reads a string from the instrument, until the terminator
+  % str (1,1) string                      % - string read from the instrument, with terminator removed
 
-flush()
+str_out = query(str_in)                   % performs writeline(str_in), and returns str_out = readline()
+  % str_in (1,1) string                   % string sent to the instrument
+  % str_out (1,1) string                  % string read from the instrument
+
+flush()                                   % clears any remaining data in the input & output buffers
 ```
 
 ### Examples
@@ -99,7 +105,7 @@ flush()
    scope.write("*IDN?");    % sends '*IDN', and nothing else
    response = scope.read(); % only stops reading when 488.2 end-of-message is received
    
-   % for non 488.2 devices (eg. serial) use the terminator / baud properties and writeline() / readline() methods 
+   % for non 488.2 devices (e.g serial) use the terminator / baud properties and writeline() / readline() methods 
    serial = matvisa("ASRL6::INSTR");
    serial.baud = 115200;
    serial.terminator = sprintf("\r\n"); % configure terminator as CR/LF, default is LF
