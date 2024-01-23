@@ -36,9 +36,7 @@ ans =
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-MATVISA is a MATLAB wrapper for the visa library distributed by National Instruments (NI-VISA). The NI-VISA library allows you to control test and measurement equiptment like oscilloscopes, function generators, multimeters, etc.
-
-MATVISA trys to be a lightweight alternative to MATLAB's _Instrument Control_ toolbox, 
+MATVISA is a MATLAB wrapper for the visa library distributed by National Instruments (NI-VISA). It trys to be a lightweight (and free) alternative to MATLAB's `visadev()`. MATVISA allows you to use SCPI commands to communicate with your oscilloscopes, benchtop DMMs, function generators, etc. using USB, GPIB, TCP/IP, and serial ports.
 
 <!-- GETTING STARTED -->
 ## Getting Started
@@ -124,8 +122,6 @@ flush()                                   % clears any remaining data in the inp
    % set a read timeout
    scope.timeout_ms = 1000; % read() and readline() will throw an error after 1 second
    ```
-
-_Use `matvisa.help()` to open the NI-VISA documentation_
 
 ## Roadmap
 - [ ] Add a 'getting_started.mlx' script
