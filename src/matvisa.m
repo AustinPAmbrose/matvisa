@@ -1,18 +1,15 @@
 classdef matvisa < handle
     properties (Constant)
-        % this is where NI-VISA was installed on my machine ¯\_(ツ)_/¯
-        VISA_LOCATION = "C:\Program Files\IVI Foundation\VISA\Microsoft.NET\Framework64\**\NationalInstruments.Visa.dll"
-        VISA_DOCUMENTATION = "C:\Program Files\IVI Foundation\VISA\Microsoft.NET\Framework64\**\Documentation\NINETVISA.chm"
+        % this loads the visa library the first time matvisa is called
+        VISA_LIB = NET.addAssembly("NationalInstruments.Visa")
     end
     properties
-        visa (1,1) % NationalInstruments.Visa.Session
-        terminator (1,:) char {mustBeNonempty} = newline;
+        visa (1,1) NationalInstruments.Visa.Session
+        terminator (1,:) char {mustBeNonempty} = newline
     end
     properties (Dependent)
         baud (1,1) int32
         timeout_ms (1,1) int32
-    end
-    properties (Hidden)
     end
     methods 
         % getters and setters for dependent properties
@@ -30,73 +27,35 @@ classdef matvisa < handle
         end
     end
     methods (Static)
-        % initialization and management
-        function init()
-            % make the NI VISA assembly visible to MATLAB
-            % this will fail for mac os and some windows machines
-            persistent isinit; if isempty(isinit); isinit = false; end
-            if isinit; return; end
-            if NET.isNETSupported == false
-                error("Couldn't find .NET support on this computer" + ...
-                    "See MATLAB .NET documentation.");
-            end
-            % locate the NI VISA dll
-            ni_visa = dir(matvisa.VISA_LOCATION);
-            if isempty(ni_visa)
-                error("Could not find NI-VISA in:" + newline +...
-                    matvisa.VISA_LOCATION + newline + ...
-                    "Make sure you install NI-VISA from ni.com");
-            end
-            % add the NI VISA to MATLAB if its not already
-            warning("off", "MATLAB:NET:AddAssembly:nameConflict");
-            NET.addAssembly([ni_visa(1).folder '\' ni_visa(1).name]);
-            warning("on", "MATLAB:NET:AddAssembly:nameConflict");
-            isinit = true;
-        end
         function visa_list = find(filter)
             % get a list of available instruments
             arguments (Input)
-                filter (1,1) string {mustBeMember(filter, [...
-                    "?*", "ASRL?*INSTR", ...
-                    "GPIB?*", "GPIB?*INSTR", "GPIB?*INTFC", ...
-                    "PXI?*", "PXI?*BACKPLANE", "PXI?*INSTR", ...
-                    "TCPIP?*", "TCPIP?*INSTR", "TCPIP?*SOCKET", ...
-                    "USB?*", "USB?*INSTR", "USB?*RAW", ...
-                    "VXI?*", "VXI?*BACKPLANE", "VXI?*INSTR"])} = "?*";  
+                filter (1,1) string = "?*"  
             end
             arguments (Output)
                 visa_list (1,:) string
             end
-            matvisa.init()
             try
-                resources = matvisa.manager.Find(filter);
+                rm = NationalInstruments.Visa.ResourceManager();
+                resources = rm.Find(filter);
+                rm.Dispose();
             catch
-                error("no visa devices found, which is weird :/");
+                rm.Dispose();
+                error("no visa devices found");
             end
             visa_list = string(resources);
-        end
-        function manager_ = manager()
-            % get an instance of a resource manager
-            persistent manager;
-            if isempty(manager)
-                manager = NationalInstruments.Visa.ResourceManager;
-            end
-            manager_ = manager;
-       end
-        function help()
-            % open documentation for NI-VISA
-            doc = dir(matvisa.VISA_DOCUMENTATION);
-            doc = ['"' doc(1).folder '\' doc(1).name '"'];
-            doc = join(doc);
-            system ("explorer " + doc);
         end
     end
     methods
         % constructor
         function obj = matvisa(resource_id)
+            arguments (Input)
+                resource_id (1,1) string
+            end
             % connect to an instrument
-            matvisa.init();
-            obj.visa = matvisa.manager.Open(resource_id);
+            rm = NationalInstruments.Visa.ResourceManager();
+            obj.visa = rm.Open(resource_id);
+            rm.Dispose();
         end
         % destructor
         function delete(obj)
@@ -126,14 +85,15 @@ classdef matvisa < handle
                     bytes = char(uint8(obj.visa.RawIO.Read(count)));
                 end
             catch
-                error("There's a solid chance the read operation timed out");
+                error("Read operation timed out (probably)");
             end
         end
         function writeline(obj, str)
-            arguments
+            arguments (Input)
                 obj
                 str (1,1) string
             end
+            % writes a string to the instrument, and appends a terminator
             obj.write(str + obj.terminator);
         end
         function str = readline(obj)
@@ -155,6 +115,13 @@ classdef matvisa < handle
             obj.visa.TerminationCharacterEnabled = false;
         end
         function str_out = query(obj, str_in)
+            arguments (Input)
+                obj
+                str_in (1,1) string
+            end
+            arguments (Output)
+                str_out (1,1) string
+            end
             obj.writeline(str_in);
             str_out = obj.readline();
         end
