@@ -6,7 +6,7 @@
   </a>
 
   <p align="center">
-    Control your test and measurement equiptment with MATLAB
+    Control your test and measurement equiptment with MATLAB!
     <br />
     <a href="https://github.com/github_username/repo_name/issues">Report Bug</a>
     ·
@@ -38,37 +38,37 @@ ans =
 
 MATVISA is a MATLAB wrapper for the visa library distributed by National Instruments (NI-VISA). The NI-VISA library allows you to control test and measurement equiptment like oscilloscopes, function generators, multimeters, etc.
 
-MATVISA is a bare-bones version of MATLAB's _Instrument Control_ toolbox.
+MATVISA trys to be a lightweight alternative to MATLAB's _Instrument Control_ toolbox, 
 
 <!-- GETTING STARTED -->
 ## Getting Started
 ### System Requirements
 
-- **OPERATING SYSTEM:** MATVISA will only work on computers running Windows. Use this command to check for support:
+- **OPERATING SYSTEM:** MATVISA only works on computers running Windows. Use this command to check for support:
   ```matlab
   NET.isNETSupported()
   ```
-- **NET ENVIRONMENT:** MATVISA requires MATLAB to use the .NET Framework. Check your NET environment with:
+- **NET ENVIRONMENT:** MATVISA requires that MATLAB use the .NET Framework. Check your NET environment with:
   ```matlab
   dotnetenv()
   ```
 
 ### Installation
 
-1. Download the latest version of NI-VISA from [ni.com](https://www.ni.com/en/support/downloads/drivers/download.ni-visa.html)
-2. Install MATVISA from the MATLAB Add-On Explorer **OR** from the matlab file exchanges
+1. Install the latest version of NI-VISA from [ni.com](https://www.ni.com/en/support/downloads/drivers/download.ni-visa.html)
+2. Install MATVISA from the MATLAB Add-On Explorer
 
 ## Usage
 ### Summary
 ```matlab
 % CLASSES ----------------------------------------------------------------------------------------------------------------------
-obj = matvisa(resource_id);               % - connects to instruments by their resource id's
-  % resource_id (1,1) string                - a resource ID for a connected instrument, e.g "ASRL6::INSTR" for COM 6
-  % obj (1,1) matvisa                       - a new matvisa instance
+obj = matvisa(resource_id);               % - connects to an instrument by its resource id
+  % resource_id (1,1) string                - an instrument's resource id, e.g "ASRL6::INSTR" for COM 6
+  % obj (1,1) matvisa                       - a new matvisa session
 
 % PROPERTIES -------------------------------------------------------------------------------------------------------------------
 baud % (1,1) int32                          - baud rate for serial devices
-terminator % (1,:) char {mustBeNonempty}    - terminator character(s) for writeline() and readline(), default is sprintf('\n')
+terminator % (1,:) char {mustBeNonempty}    - terminator character(s) for writeline() and readline(), default is newline, char(10)
 timeout_ms % (1,1) int32                    - sets the timeout in miliseconds for read() and readline()
 
 % METHODS ----------------------------------------------------------------------------------------------------------------------
@@ -80,7 +80,7 @@ write(bytes)                              % - writes raw data to the instrument,
   % bytes (1,:) char                        - bytes sent to the instrument
 
 bytes = read(count)                       % - reads until end-of-message, or until count is satisfied
-  % count (1,:) int32 {mustBeScalarOrEmpty} - optional number of bytes to be read from the instrument, default is all
+  % count (1,1) int32 {mustBeScalarOrEmpty} - optional number of bytes to be read from the instrument, default is empty, []
   % bytes (1,:) char                        - bytes read from the instrument
 
 writeline(str)                            % - writes string to instrument, with terminator appended
