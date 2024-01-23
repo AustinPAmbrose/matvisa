@@ -1,5 +1,5 @@
 classdef matvisa < handle
-    properties (Constant)
+    properties (Constant, Hidden)
         % this loads the visa library the first time matvisa is called
         VISA_LIB = NET.addAssembly("NationalInstruments.Visa")
     end
