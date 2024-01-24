@@ -45,7 +45,7 @@ matlab.addons.toolbox.packageToolbox(options);
 % commit, push, and release
 system("git commit -am v" + next_rev);
 system("git push");
-system("gh release create v"+ next_rev +" ./bin/MATVISA.mltbx")
+system("gh release create v"+ next_rev +" ./bin/MATVISA.mltbx");
 
 % cleanup workspace
 clear folder UUID options
