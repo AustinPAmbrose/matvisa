@@ -2,6 +2,7 @@ classdef matvisa < handle
     properties (Constant, Hidden)
         % this loads the visa library the first time matvisa is called
         VISA_LIB = NET.addAssembly("NationalInstruments.Visa")
+        VISA_MANAGER = NationalInstruments.Visa.ResourceManager()
     end
     properties
         visa (1,1) NationalInstruments.Visa.Session
@@ -29,6 +30,7 @@ classdef matvisa < handle
     methods (Static)
         function visa_list = find(filter)
             % get a list of available instruments
+            % you can use ? and * as wildcards
             arguments (Input)
                 filter (1,1) string = "?*"  
             end
@@ -36,14 +38,11 @@ classdef matvisa < handle
                 visa_list (1,:) string
             end
             try
-                rm = NationalInstruments.Visa.ResourceManager();
-                resources = rm.Find(filter);
-                rm.Dispose();
+                resources = matvisa.VISA_MANAGER.Find(filter);
+                visa_list = string(resources);
             catch
-                rm.Dispose();
                 error("no visa devices found");
             end
-            visa_list = string(resources);
         end
     end
     methods
@@ -53,9 +52,7 @@ classdef matvisa < handle
                 resource_id (1,1) string
             end
             % connect to an instrument
-            rm = NationalInstruments.Visa.ResourceManager();
-            obj.visa = rm.Open(resource_id);
-            rm.Dispose();
+            obj.visa = matvisa.VISA_MANAGER.Open(resource_id);
         end
         % destructor
         function delete(obj)

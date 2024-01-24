@@ -71,14 +71,14 @@ timeout_ms % (1,1) int32                    - sets the timeout in miliseconds fo
 
 % METHODS ----------------------------------------------------------------------------------------------------------------------
 visa_list = find(filter)                  % - a static method that finds all connected instruments
-  % filter    (1,1) string                  - optional regular expression to filter resource id's, e.g "USB?*", default is "?*"
+  % filter    (1,1) string                  - optional filter with * and ? wildcards, e.g "USB?*", default is "?*"
   % visa_list (1,:) string                  - a list of all available resources
 
 write(bytes)                              % - writes raw data to the instrument, without a terminator
   % bytes (1,:) char                        - bytes sent to the instrument
 
 bytes = read(count)                       % - reads until end-of-message, or until count is satisfied
-  % count (1,1) int32 {mustBeScalarOrEmpty} - optional number of bytes to be read from the instrument, default is empty, []
+  % count (1,1) int32 {mustBeScalarOrEmpty} - optional number of bytes to be read, default is empty, []
   % bytes (1,:) char                        - bytes read from the instrument
 
 writeline(str)                            % - writes string to instrument, with terminator appended
@@ -111,8 +111,7 @@ flush()                                   % clears any remaining data in the inp
    response = serial.readline();        % reads until '\r\n' or timeout (terminator removed from response)
 
    % use query to save a line of code
-   scope = matvisa("USB0::0x2A8D::0x039B::CN61381404::INSTR");
-   response = scope.query("*IDN?"); % equivilent to writeline() & readline()
+   response = serial.query("*IDN?"); % equivilent to writeline() & readline()
    
    % read the first 4 bytes of the oscilloscopes identification string
    scope.write("*IDN?");
