@@ -18,7 +18,7 @@ if test_results.Failed > 0
 end
 
 % update contents.m
-choice = input("what would you like to build? (major, minor, bug, build", "s");
+choice = input("what would you like to build? (major, minor, bug, build)", "s");
 contents = readlines("src\Contents.m");
 ver_line = split(contents(2), " ");
 ver_str  = ver_line(3);
