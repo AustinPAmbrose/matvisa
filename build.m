@@ -43,7 +43,7 @@ options.ToolboxMatlabPath = "src"; % folders to add to path
 matlab.addons.toolbox.packageToolbox(options);
 
 % commit, push, and release
-system("git commit -am 'v" + next_rev);
+system("git commit -am v" + next_rev);
 system("git push");
 system("gh release create v"+ next_rev +" ./bin/MATVISA.mltbx")
 
