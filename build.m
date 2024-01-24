@@ -4,11 +4,11 @@ assert(string(pwd) == "C:\Users\apambrose\Documents\My_Drive\Projects\MATLAB_Pro
 % make sure everything is up-to-date and comitted
 [~, status] = system("git status -sb");
 if contains(status, "behind")
-    error("local repo is behind remote, please pull" + status);
+    error("local repo is behind remote, please pull" + newline + status);
 elseif contains(status, " M ")
-    error("uncomitted changes found" + status)
+    error("uncomitted changes found" + newline + status)
 elseif contains(status, "ahead")
-    error("unpushed changes found" + status)
+    error("unpushed changes found" + newline + status)
 end
 
 % run unit tests
