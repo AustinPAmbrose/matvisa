@@ -1,15 +1,21 @@
 % make sure I'm in the right directory
 assert(string(pwd) == "C:\Users\apambrose\Documents\My_Drive\Projects\MATLAB_Projects\matvisa");
 
-% make sure everything is up-to-date
+% make sure everything is up-to-date and comitted
 [~, status] = system("git status -sb");
 if contains(status, "behind")
-    error("local repo is behind remote");
+    error("local repo is behind remote, please pull" + status);
+elseif contains(status, " M ")
+    error("uncomitted changes found" + status)
+elseif contains(status, "ahead")
+    error("unpushed changes found" + status)
 end
 
-% make sure everything is committed
-
-% run tests
+% run unit tests
+test_results = runtests("tests");
+if test_results.Failed > 0
+    error("can not build if tests are failing...")
+end
 
 % update contents.m
 choice = input("what would you like to build? (major, minor, bug, build", "s");
@@ -36,9 +42,12 @@ options.ToolboxFiles = [dir2files("src"), dir2files("examples")];
 options.ToolboxMatlabPath = "src"; % folders to add to path
 matlab.addons.toolbox.packageToolbox(options);
 
-% create a new github release
+% commit, push, and release
+system("git commit -am 'v" + next_rev);
+system("git push");
+system("gh release create v"+ next_rev +" ./bin/MATVISA.mltbx")
 
-% cleanup
+% cleanup workspace
 clear folder UUID options
 
 function files = dir2files(directory)
