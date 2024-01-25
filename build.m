@@ -1,3 +1,8 @@
+function build(choice)
+arguments
+    choice (1,1) string {mustBeMember(choice, ["major", "minor", "patch", "build"])} = "build"
+end
+
 % make sure I'm in the right directory
 assert(string(pwd) == "C:\Users\apambrose\Documents\My_Drive\Projects\MATLAB_Projects\matvisa");
 
@@ -5,10 +10,17 @@ assert(string(pwd) == "C:\Users\apambrose\Documents\My_Drive\Projects\MATLAB_Pro
 [~, status] = system("git status -sb");
 if contains(status, "behind")
     error("local repo is behind remote, please pull" + newline + status);
-elseif contains(status, " M ")
-    error("uncomitted changes found" + newline + status)
-elseif contains(status, "ahead")
-    error("unpushed changes found" + newline + status)
+end
+[~, status] = system("git status -sb");
+if contains(status, " M ")
+    warning("uncomitted changes found")
+    msg = input("enter commit message: ", "s");
+    system("git commit -am '" + msg + "' --quiet");
+end
+[~, status] = system("git status -sb");
+if contains(status, "ahead")
+    warning("unpushed changes found... pushing")
+    system("git push --quiet")
 end
 
 % run unit tests
@@ -18,7 +30,6 @@ if test_results.Failed > 0
 end
 
 % update contents.m
-choice = input("what would you like to build? (major, minor, patch, build)", "s");
 contents = readlines("src\Contents.m");
 ver_line = split(contents(2), " ");
 ver_str  = ver_line(3);
@@ -48,14 +59,16 @@ options.ToolboxMatlabPath = "src"; % folders to add to path
 matlab.addons.toolbox.packageToolbox(options);
 
 % commit, push, and release
-system("git commit -am v" + next_rev);
-system("git push");
+system("git commit -am v" + next_rev + " --quiet");
+system("git push --quiet");
 if any(choice == ["major","minor","patch"])
     system("gh release create v"+ next_rev +" ./bin/MATVISA.mltbx --generate-notes");
 end
 
 % cleanup workspace
 clear folder UUID options
+
+end
 
 function files = dir2files(directory)
     arguments (Input)
