@@ -51,7 +51,7 @@ matlab.addons.toolbox.packageToolbox(options);
 system("git commit -am v" + next_rev);
 system("git push");
 if any(choice == ["major","minor","patch"])
-    system("gh release create v"+ next_rev +" ./bin/MATVISA.mltbx");
+    system("gh release create v"+ next_rev +" ./bin/MATVISA.mltbx --generate-notes");
 end
 
 % cleanup workspace
