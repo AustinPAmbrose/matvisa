@@ -20,7 +20,7 @@ end
 [~, status] = system("git status -sb");
 if contains(status, "ahead")
     warning("unpushed changes found... pushing")
-    system("git push --quiet")
+    system("git push --quiet");
 end
 
 % run unit tests
