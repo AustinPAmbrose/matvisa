@@ -18,7 +18,7 @@ if test_results.Failed > 0
 end
 
 % update contents.m
-choice = input("what would you like to build? (major, minor, bug, build)", "s");
+choice = input("what would you like to build? (major, minor, patch, build)", "s");
 contents = readlines("src\Contents.m");
 ver_line = split(contents(2), " ");
 ver_str  = ver_line(3);
@@ -36,6 +36,11 @@ options.Summary = "Control your test and measurement equiptment with MATLAB!";
 options.Description = "";
 options.AuthorName = "Austin Ambrose";
 options.AuthorEmail = "austin.p.ambrose@gmail.com";
+options.MinimumMatlabRelease = "R2022b";
+options.SupportedPlatforms.Glnxa64 = false;
+options.SupportedPlatforms.Maci64 = false;
+options.SupportedPlatforms.MatlabOnline = false;
+options.SupportedPlatforms.Win64 = true;
 options.ToolboxGettingStartedGuide = "examples\matvisa_intro.mlx";
 options.OutputFile = "bin\matvisa.mltbx";
 options.ToolboxFiles = [dir2files("src"), dir2files("examples")];
@@ -45,7 +50,9 @@ matlab.addons.toolbox.packageToolbox(options);
 % commit, push, and release
 system("git commit -am v" + next_rev);
 system("git push");
-system("gh release create v"+ next_rev +" ./bin/MATVISA.mltbx");
+if any(choice == ["major","minor","patch"])
+    system("gh release create v"+ next_rev +" ./bin/MATVISA.mltbx");
+end
 
 % cleanup workspace
 clear folder UUID options
@@ -66,7 +73,7 @@ end
 function next_rev = bump_rev(cur_rev, type)
     arguments (Input)
         cur_rev (1,1) string
-        type (1,1) string {mustBeMember(type, ["major", "minor", "bug", "build"])}
+        type (1,1) string {mustBeMember(type, ["major", "minor", "patch", "build"])}
     end
     arguments (Output)
         next_rev (1,1) string
@@ -76,14 +83,14 @@ function next_rev = bump_rev(cur_rev, type)
         case "major"
             rev_struct.major = rev_struct.major + 1;
             rev_struct.minor = 0;
-            rev_struct.bug = 0;
+            rev_struct.patch = 0;
             rev_struct.build = rev_struct.build + 1;
         case "minor"
             rev_struct.minor = rev_struct.minor + 1;
-            rev_struct.bug = 0;
+            rev_struct.patch = 0;
             rev_struct.build = rev_struct.build + 1;
-        case "bug"
-            rev_struct.bug = rev_struct.bug + 1;
+        case "patch"
+            rev_struct.patch = rev_struct.patch + 1;
             rev_struct.build = rev_struct.build + 1;
         case "build"
             rev_struct.build = rev_struct.build + 1;
@@ -96,15 +103,15 @@ function next_rev = bump_rev(cur_rev, type)
         buff = uint32(buff);
         version.major = buff(1);
         version.minor = buff(2);
-        version.bug   = buff(3);
+        version.patch = buff(3);
         version.build = buff(4);
     end
     function str = version2str(version)
         major = string(version.major);
         minor = string(version.minor);
-        bug   = string(version.bug);
+        patch = string(version.patch);
         build = string(version.build);
-        str = join([major minor bug build], ".");
+        str = join([major minor patch build], ".");
     end
 end
 
