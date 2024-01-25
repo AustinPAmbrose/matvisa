@@ -15,7 +15,7 @@ end
 if contains(status, " M ")
     warning("uncomitted changes found")
     msg = input("enter commit message: ", "s");
-    system("git commit -am '" + msg + "' --quiet");
+    system("git commit -am """ + msg + """ --quiet");
 end
 [~, status] = system("git status -sb");
 if contains(status, "ahead")
