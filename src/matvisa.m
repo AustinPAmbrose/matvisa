@@ -127,5 +127,26 @@ classdef matvisa < handle
         end
         % "While a man lives he wins no greater honor than footwork
         % and the skill of hands can bring him."
+        function writebinblock(obj, bytes)
+           arguments
+                obj
+                bytes (1,:) char
+           end
+           len = length(bytes);
+           len = char(string(len));
+           len_meta = string(length(len));
+           obj.write(['#' len_meta len bytes]);
+        end
+        function bytes = readbinblock(obj)
+           arguments (Output)
+                bytes (1,:) char
+           end
+           assert(obj.read(1) == '#', "first character was not '#'");
+           len_meta = string(obj.read(1));   % "3" as string
+           len_meta = double(len_meta);      % 3 as double
+           len = string(obj.read(len_meta)); % "576" as string
+           len = double(len);
+           bytes = obj.read(len);
+        end
     end
 end
