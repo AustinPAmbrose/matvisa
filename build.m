@@ -25,7 +25,7 @@ end
 
 % run unit tests
 test_results = runtests("tests");
-if test_results.Failed > 0
+if any([test_results.Failed])
     error("can not build if tests are failing...")
 end
 
