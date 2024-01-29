@@ -123,9 +123,9 @@ flush()                                   % clears any remaining data in the inp
    ```
 
 ## Roadmap
-- [ ] Add a 'getting_started.mlx' script
-- [ ] Add `readbinblock()` and `writebinblock()` methods
-- [ ] Support for mac os
+- [x] Add a 'getting_started.mlx' script
+- [x] Add `readbinblock()` and `writebinblock()` methods
+- [x] Add an example instrument driver class
 
 See the [open issues](https://github.com/AustinPAmbrose/matvisa/issues) for a full list of proposed features (and known issues).
 
