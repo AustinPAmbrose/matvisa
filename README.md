@@ -8,9 +8,9 @@
   <p align="center">
     Control your test and measurement equiptment with MATLAB!
     <br />
-    <a href="https://github.com/github_username/repo_name/issues">Report Bug</a>
+    <a href="https://github.com/AustinPAmbrose/matvisa/issues">Report Bug</a>
     ·
-    <a href="https://github.com/github_username/repo_name/issues">Request Feature</a>
+    <a href="https://github.com/AustinPAmbrose/matvisa/issues">Request Feature</a>
   </p>
 </div>
 
@@ -137,6 +137,6 @@ Distributed under the MIT License. See `LICENSE.txt` for more information.
 <!-- CONTACT -->
 ## Contact
 
-Austin Ambrose - [@twitter_handle](https://twitter.com/twitter_handle) - austin.p.ambrose@gmail.com
+Austin Ambrose - austin.p.ambrose@gmail.com
 
 Project Link: [https://github.com/AustinPAmbrose/matvisa](https://github.com/AustinPAmbrose/matvisa)
