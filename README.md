@@ -36,7 +36,7 @@ ans =
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-MATVISA is a MATLAB wrapper for the visa library distributed by National Instruments (NI-VISA). It trys to be a lightweight (and free) alternative to MATLAB's `visadev()`. MATVISA allows you to use SCPI commands to communicate with your oscilloscopes, benchtop DMMs, function generators, etc. using USB, GPIB, TCP/IP, and serial ports.
+MATVISA is a MATLAB wrapper for the visa library distributed by National Instruments (NI-VISA). It tries to be a lightweight (and free) alternative to MATLAB's `visadev()`. MATVISA allows you to use SCPI commands to communicate with your oscilloscopes, benchtop DMMs, function generators, etc. using USB, GPIB, TCP/IP, and serial ports.
 
 <!-- GETTING STARTED -->
 ## Getting Started
