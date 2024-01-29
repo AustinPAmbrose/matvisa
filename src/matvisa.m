@@ -142,11 +142,11 @@ classdef matvisa < handle
                 bytes (1,:) char
            end
            assert(obj.read(1) == '#', "first character was not '#'");
-           len_meta = string(obj.read(1));   % "3" as string
-           len_meta = double(len_meta);      % 3 as double
-           len = string(obj.read(len_meta)); % "576" as string
-           len = double(len);
-           bytes = obj.read(len);
+           len_meta = obj.read(1);          % "5" as string
+           len_meta = str2double(len_meta); % 5 as double
+           len = obj.read(len_meta);        % "50000" as string
+           len = str2double(len);           % 50000 as double
+           bytes = obj.read(len);           % The binary data
         end
     end
 end

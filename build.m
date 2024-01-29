@@ -55,7 +55,7 @@ options.SupportedPlatforms.Win64 = true;
 options.ToolboxGettingStartedGuide = "examples\matvisa_intro.mlx";
 options.OutputFile = "bin\matvisa.mltbx";
 options.ToolboxFiles = [dir2files("src"), dir2files("examples")];
-options.ToolboxMatlabPath = "src"; % folders to add to path
+options.ToolboxMatlabPath = ["src", "examples"]; % folders to add to path
 matlab.addons.toolbox.packageToolbox(options);
 
 % commit, push, and release
