@@ -1,11 +1,13 @@
 classdef EDUX1052G < matvisa
+    
     properties (Dependent)
         % Common Commands
         id     (1,1) string
         status (1,1) struct
         % Root Commands
-        armed (1,1) logical
-        % Waveform Commands
+        is_armed (1,1) logical
+        is_running (1,1) logical
+        % Waveform Commands - is_running must be false to use these
         waveform_points_mode (1,1) string {mustBeMember(waveform_points_mode, ["NORM", "MAX", "RAW"])}
         waveform_preamble (1,1) struct
         waveform_segmented_count (1,1) double
@@ -15,7 +17,7 @@ classdef EDUX1052G < matvisa
         waveform_unsigned (1,1) logical
         waveform_format (1,1) string {mustBeMember(waveform_format, ["WORD", "BYTE", "ASCII"])}
         waveform_byteorder (1,1) string {mustBeMember(waveform_byteorder, ["LSBF", "MSBF"])}
-        % waveform_data (1,1) timetable % <<-- This is your waveform data
+        waveform_data (1,1) timetable % <<-- This is the waveform data ()
         % Trigger Commands
         trigger_hfreject (1,1) logical
         trigger_holdoff (1,1) double {mustBeInRange(trigger_holdoff, 60E-9, 10)}
@@ -89,8 +91,13 @@ classdef EDUX1052G < matvisa
         function stop(obj)
             obj.write(":STOP"); 
         end
-        function isarmed = get.armed(obj)
-            isarmed = obj.istrue(":AER?"); 
+        function is_armed_ = get.is_armed(obj)
+            is_armed_ = obj.querylogical(":AER?"); 
+        end
+        function is_running_ = get.is_running(obj)
+            condition = obj.query(":OPEREGISTER:CONDITION?");
+            condition = uint16(double(condition));
+            is_running_ = bitand(condition, 0b0000000000001000) ~= 0;
         end
         function autoscale(obj, channels)
             arguments
@@ -109,19 +116,20 @@ classdef EDUX1052G < matvisa
             obj.write("WAVEFORM:POINTS:MODE " + waveform_points_mode_);
         end
         function waveform_preamble_ = get.waveform_preamble(obj)
-            waveform_preamble_buff = obj.query("WAVEFORM:PREAMBLE?");
-            waveform_preamble_buff = split(waveform_preamble_buff, ",");
-            waveform_preamble_buff = double(waveform_preamble_buff);
-            waveform_preamble_.format = waveform_preamble_buff(1);
-            waveform_preamble_.type = waveform_preamble_buff(2);
-            waveform_preamble_.points = waveform_preamble_buff(3);
-            waveform_preamble_.count = waveform_preamble_buff(4);
-            waveform_preamble_.xincrement = waveform_preamble_buff(5);
-            waveform_preamble_.xorigin = waveform_preamble_buff(6);
-            waveform_preamble_.xreference = waveform_preamble_buff(7);
-            waveform_preamble_.yincrement = waveform_preamble_buff(8);
-            waveform_preamble_.yorigin = waveform_preamble_buff(9);
-            waveform_preamble_.yreference = waveform_preamble_buff(10);
+            assert(obj.is_running == false, "scope must be stopped to aquire data");
+            preamble_buff = obj.query("WAVEFORM:PREAMBLE?");
+            preamble_buff = split(preamble_buff, ",");
+            preamble_buff = double(preamble_buff);
+            waveform_preamble_.format       = preamble_buff(1);
+            waveform_preamble_.type         = preamble_buff(2);
+            waveform_preamble_.points       = preamble_buff(3);
+            waveform_preamble_.count        = preamble_buff(4);
+            waveform_preamble_.xincrement   = preamble_buff(5);
+            waveform_preamble_.xorigin      = preamble_buff(6);
+            waveform_preamble_.xreference   = preamble_buff(7);
+            waveform_preamble_.yincrement   = preamble_buff(8);
+            waveform_preamble_.yorigin      = preamble_buff(9);
+            waveform_preamble_.yreference   = preamble_buff(10);
         end
         function waveform_format_ = get.waveform_format(obj)
             waveform_format_ = obj.query("WAVEFORM:FORMAT?");
@@ -154,12 +162,12 @@ classdef EDUX1052G < matvisa
             obj.write("WAVEFORM:SOURCE:SUBS " + waveform_source_subs_);
         end
         function waveform_unsigned_ = get.waveform_unsigned(obj)
-            waveform_unsigned_ = obj.istrue("WAVEFORM:UNSIGNED?");
+            waveform_unsigned_ = obj.querylogical("WAVEFORM:UNSIGNED?");
         end
         function set.waveform_unsigned(obj, waveform_unsigned_)
             obj.write("WAVEFORM:UNSIGNED " + double(waveform_unsigned_));
         end
-        function waveform_data_ = waveform_data(obj)
+        function waveform_data_ = get.waveform_data(obj)
             p = obj.waveform_preamble;
             obj.write("WAVEFORM:DATA?");
             switch p.format
@@ -167,14 +175,12 @@ classdef EDUX1052G < matvisa
                     data = obj.readbinblock();
                     obj.read(); % clear the terminator
                     data = double(data);
-                    p = obj.waveform_preamble;
                     voltage = (((data - p.yreference)*p.yincrement) + p.yorigin)';
                 case 1 % WORD
                     data = obj.readbinblock(); 
                     obj.read(); % clear the terminator
                     data = typecast(uint8(data), 'int16');
                     data = double(data);
-                    p = obj.waveform_preamble;
                     voltage = (((data - p.yreference)*p.yincrement) + p.yorigin)';
                 case 4 % ASCII
                     data = obj.readline();
@@ -190,7 +196,7 @@ classdef EDUX1052G < matvisa
             obj.write("TRIGGER:FORCE");
         end
         function trigger_hfreject_ = get.trigger_hfreject(obj)
-            trigger_hfreject_ = obj.istrue("TRIGGER:HFREJECT?");
+            trigger_hfreject_ = obj.querylogical("TRIGGER:HFREJECT?");
         end
         function set.trigger_hfreject(obj, trigger_hfreject_)
             obj.write("TRIGGER:HFREJECT " + double(trigger_hfreject_));
@@ -245,16 +251,16 @@ classdef EDUX1052G < matvisa
             obj.write("CHANNEL2:COUPLING " + channel_coupling_(2));
         end
         function channel_display_ = get.channel_display(obj)
-            channel_display_(1) = obj.istrue("CHANNEL1:DISPLAY?");
-            channel_display_(2) = obj.istrue("CHANNEL2:DISPLAY?");
+            channel_display_(1) = obj.querylogical("CHANNEL1:DISPLAY?");
+            channel_display_(2) = obj.querylogical("CHANNEL2:DISPLAY?");
         end
         function set.channel_display(obj, channel_display_)
             obj.write("CHANNEL1:DISPLAY " + double(channel_display_(1)));
             obj.write("CHANNEL2:DISPLAY " + double(channel_display_(2)));
         end
         function channel_invert_ = get.channel_invert(obj)
-            channel_invert_(1) = obj.istrue("CHANNEL1:INVERT?");
-            channel_invert_(2) = obj.istrue("CHANNEL2:INVERT?");
+            channel_invert_(1) = obj.querylogical("CHANNEL1:INVERT?");
+            channel_invert_(2) = obj.querylogical("CHANNEL2:INVERT?");
         end
         function set.channel_invert(obj, channel_invert_)
             obj.write("CHANNEL1:INVERT " + double(channel_invert_(1)));
@@ -343,7 +349,7 @@ classdef EDUX1052G < matvisa
         end
 
         % class helper methods
-        function logical_ = istrue(obj, str)
+        function logical_ = querylogical(obj, str)
             logical_ = obj.query(str);
             logical_ = double(logical_);
             logical_ = logical(logical_);
