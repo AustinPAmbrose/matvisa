@@ -11,26 +11,24 @@ scope.reset();                         % start in a known state
 
 % setup the trigger
 scope.trigger_sweep = "NORM";          % only trigger when conditions are met
-scope.trigger_edge_level = 20E-3;      % with nothing connected, this shouldn't trigger
+scope.trigger_edge_level = 1;          % 1V is fine for the demo signal
 
 % setup the timebase
-scope.timebase_reference = "LEFT";
-scope.timebase_range = 100E-9;
+scope.timebase_reference = "LEFT";     % personal preference
+scope.timebase_range = 3e-3;           % 3ms is 3 cycles of the demo signal
 
-% setup the channel
-scope.channel_display(1) = true;
-scope.channel_scale(1) = 5E-3;         % just trying to measure some noise
+% setup channel 1
+scope.channel_display(1) = true;       % make sure channel 1 is on
+scope.channel_scale(1) = 500E-3;       % get the best resolution out of our signal
+scope.channel_offset = 1.25;           % move the waveform down so it fits
 
-% setup the waveform module
-scope.waveform_source = "CHAN1";
-scope.waveform_format = "WORD";
+% capture the demo signal
+scope.single();
+while(scope.is_armed == false); end    % wait for the trigger to arm
+while(scope.is_running == true); end   % wait for the scope to come to a stop
+scope.waveform_source = "CHAN1";       % this is the channel to pull data from
+scope.waveform_format = "WORD";        % transfer the data as int16's
+my_data = scope.waveform_data;         % retreive the data
 
-% capture the noise
-scope.run();
-scope.trigger_force();
-scope.stop();
-my_data = scope.waveform_data(); % this is always a hard one to implement
-                                 % need to prevent this from hanging under
-                                 % certain conditions
 % plot the waveform
 plot(my_data.time, my_data.voltage);
