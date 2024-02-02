@@ -101,14 +101,21 @@ classdef matvisa < handle
             obj.visa.TerminationCharacter = int8(obj.terminator(end));
             obj.visa.TerminationCharacterEnabled = true;
             str = "";
-            while true
-                % because VISA only supports one termination character,
-                % we need to keep reading until we've found the entire
-                % terminator sequence (CRLF, or something else weird)
-                str = str + obj.read();
-                if endsWith(str, obj.terminator); break; end
+            try
+                while true
+                    % because VISA only supports one termination character,
+                    % we need to keep reading until we've found the entire
+                    % terminator sequence (CRLF, or something else weird)
+                    str = str + obj.read();
+                    if endsWith(str, obj.terminator); break; end
+                end
+                str = strrep(str, obj.terminator, "");
+            catch ME
+                % disable the terminator, even if an error occurs
+                obj.visa.TerminationCharacterEnabled = false;
+                error("matvisa read() likely timed out");
             end
-            str = strrep(str, obj.terminator, "");
+            % disable the terminator
             obj.visa.TerminationCharacterEnabled = false;
         end
         function str_out = query(obj, str_in)
