@@ -168,6 +168,9 @@ classdef EDUX1052G < matvisa
             obj.write("WAVEFORM:UNSIGNED " + double(waveform_unsigned_));
         end
         function waveform_data_ = get.waveform_data(obj)
+            % configure for data transfer
+            obj.waveform_byteorder = "LSBF";
+            obj.waveform_unsigned = false;
             p = obj.waveform_preamble;
             obj.write("WAVEFORM:DATA?");
             switch p.format
