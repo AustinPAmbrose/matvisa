@@ -177,6 +177,7 @@ classdef EDUX1052G < matvisa
                 case 0 % BYTE
                     data = obj.readbinblock();
                     obj.read(); % clear the terminator
+                    data = typecast(uint8(data), 'int8');
                     data = double(data);
                     voltage = (((data - p.yreference)*p.yincrement) + p.yorigin)';
                 case 1 % WORD
